@@ -1,0 +1,24 @@
+# Gradle
+.gradle/
+build/
+**/build/
+android/local.properties
+
+# Kotlin / Java
+*.class
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store
+
+# Android
+*.apk
+*.aab
+*.keystore
+*.jks
+captures/
