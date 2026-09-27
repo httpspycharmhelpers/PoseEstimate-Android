@@ -63,13 +63,19 @@ public final class ModelCatalog {
     return out;
   }
 
-  /** The first entry of {@link #all} whose value is in {@code selected}. */
+  /**
+   * The first entry of {@link #all} whose value is in {@code selected}.
+   *
+   * <p>Returns the default (ML Kit) only when the preference was never touched
+   * ({@code null}). If the user actively cleared every checkbox (empty set or
+   * no match) this returns {@code null} and the caller must NOT start a model.
+   */
   public static String firstSelected(Context context, Set<String> selected) {
     if (selected == null) return MLKIT;
     for (Entry e : all(context)) {
       if (selected.contains(e.value)) return e.value;
     }
-    return MLKIT;
+    return null;
   }
 
   /** Human label for a value, or the raw value when unknown. */

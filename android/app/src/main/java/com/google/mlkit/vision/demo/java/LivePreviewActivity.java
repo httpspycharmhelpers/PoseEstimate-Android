@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Environment;
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,8 +48,10 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.mlkit.vision.demo.CameraSource;
 import com.google.mlkit.vision.demo.CameraSourcePreview;
+import com.google.mlkit.vision.demo.FrameMetadata;
 import com.google.mlkit.vision.demo.GraphicOverlay;
 import com.google.mlkit.vision.demo.R;
+import com.google.mlkit.vision.demo.VisionImageProcessor;
 import com.google.mlkit.vision.demo.java.posedetector.PoseDetectorProcessor;
 import com.google.mlkit.vision.demo.java.posedetector.YoloPoseProcessor;
 import com.google.mlkit.vision.demo.java.posedetector.PoseGraphic;
@@ -66,6 +69,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -144,7 +148,42 @@ public final class LivePreviewActivity extends AppCompatActivity
       return true;
     }
 
+    if (item.getItemId() == R.id.copy_errors) {
+      copyErrorReport();
+      return true;
+    }
+
     return super.onOptionsItemSelected(item);
+  }
+
+  /** Copies device info + recent error log to the clipboard for bug reports. */
+  private void copyErrorReport() {
+    try {
+      String device = Build.MANUFACTURER + " " + Build.MODEL + " (Android "
+          + Build.VERSION.RELEASE + ", API " + Build.VERSION.SDK_INT + ")";
+      String selected = String.valueOf(PreferenceUtils.getSelectedModels(this));
+      String first = String.valueOf(PreferenceUtils.getFirstSelectedModel(this));
+      StringBuilder sb = new StringBuilder("PoseEstimate 错误报告\n");
+      sb.append("设备: ").append(device).append('\n');
+      sb.append("已选模型: ").append(selected == null ? "null" : selected).append('\n');
+      sb.append("将运行: ").append(first).append('\n');
+      sb.append("---- 日志 ----\n");
+      List<String> snap = com.google.mlkit.vision.demo.ErrorLog.snapshot();
+      if (snap.isEmpty()) {
+        sb.append("(无日志记录)");
+      } else {
+        int from = Math.max(0, snap.size() - 100);
+        for (int i = from; i < snap.size(); i++) sb.append(snap.get(i)).append('\n');
+      }
+      android.content.ClipData clip =
+          android.content.ClipData.newPlainText("pose-error-report", sb.toString());
+      android.content.ClipboardManager cm =
+          (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+      if (cm != null) cm.setPrimaryClip(clip);
+      Toast.makeText(this, "已复制错误报告到剪贴板，请粘贴发给我", Toast.LENGTH_LONG).show();
+    } catch (Exception e) {
+      Toast.makeText(this, "复制失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
+    }
   }
 
   @Override
@@ -209,11 +248,18 @@ public final class LivePreviewActivity extends AppCompatActivity
 
   /**
    * Unified processor dispatch: runs the FIRST selected model from the settings
-   * multi-select (ML Kit / ncnn / builtin ONNX / imported ONNX).
+   * multi-select (ML Kit / ncnn / builtin ONNX / imported ONNX). When nothing
+   * is selected, no model runs and the preview shows raw camera frames.
    */
   private void createProcessorFromSelection() {
     String first = PreferenceUtils.getFirstSelectedModel(this);
     boolean jumperMode = PreferenceUtils.isJumpRopeModeEnabled(this);
+    if (first == null) {
+      com.google.mlkit.vision.demo.ErrorLog.i(TAG, "未选择任何模型，本次不启动推理");
+      Toast.makeText(this, "未选择任何模型，请在设置中勾选至少一个模型", Toast.LENGTH_LONG).show();
+      cameraSource.setMachineLearningFrameProcessor(new NoOpProcessor());
+      return;
+    }
     try {
       if (first.equals(com.google.mlkit.vision.demo.java.ModelCatalog.MLKIT)) {
         Log.i(TAG, "Using ML Kit native pose");
@@ -375,6 +421,21 @@ public final class LivePreviewActivity extends AppCompatActivity
     }
     Log.i(TAG, "Permission NOT granted: " + permission);
     return false;
+  }
+
+  /** Processor that drops every frame; used when no model is selected. */
+  private static final class NoOpProcessor implements VisionImageProcessor {
+    @Override
+    public void processBitmap(Bitmap bitmap, GraphicOverlay graphicOverlay) {}
+    @Override
+    public void processByteBuffer(
+        ByteBuffer data, FrameMetadata frameMetadata, GraphicOverlay graphicOverlay) {}
+    @Override
+    public void processImageProxy(
+        @androidx.annotation.NonNull androidx.camera.core.ImageProxy image,
+        GraphicOverlay graphicOverlay) {}
+    @Override
+    public void stop() {}
   }
 
   public void generateNoteOnSD(String sFileName, String sBody) {

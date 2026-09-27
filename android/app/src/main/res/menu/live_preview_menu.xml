@@ -13,4 +13,9 @@
       android:title="@string/menu_item_terminal"
       app:showAsAction="never"/>
 
+  <item
+      android:id="@+id/copy_errors"
+      android:title="@string/menu_item_copy_errors"
+      app:showAsAction="never"/>
+
 </menu>

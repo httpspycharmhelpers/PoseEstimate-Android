@@ -41,9 +41,11 @@ android {
         jvmTarget = "1.8"
     }
 
-    // Do NOT compress ONNX/TFLite/NCNN model files (important for direct asset load).
+    // Keep model assets uncompressed: ncnn reads via AAsset and fails on
+    // compressed files. noCompress matches the trailing extension, so the
+    // ".ncnn.param"/".ncnn.bin" files need "param"/"bin" (not "ncnn").
     aaptOptions {
-        noCompress "onnx", "tflite", "ncnn"
+        noCompress "onnx", "tflite", "param", "bin", "ncnn"
     }
 }
 

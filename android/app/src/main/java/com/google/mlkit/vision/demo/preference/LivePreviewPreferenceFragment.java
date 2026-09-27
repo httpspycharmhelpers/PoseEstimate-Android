@@ -105,8 +105,9 @@ public class LivePreviewPreferenceFragment extends PreferenceFragment {
       @SuppressWarnings("unchecked")
       Set<String> newly = (Set<String>) newValue;
       String first = ModelCatalog.firstSelected(getActivity(), newly);
+      String run = (first == null) ? "未选择，不启动" : ModelCatalog.labelFor(getActivity(), first);
       preference.setSummary(getString(R.string.pref_summary_ncnn_models)
-          + "（" + newly.size() + " 个已选，将运行: " + ModelCatalog.labelFor(getActivity(), first) + "）");
+          + "（" + newly.size() + " 个已选，将运行: " + run + "）");
       return true;
     });
   }
@@ -115,6 +116,7 @@ public class LivePreviewPreferenceFragment extends PreferenceFragment {
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (requestCode == REQ_IMPORT_ONNX && resultCode == Activity.RESULT_OK && data != null) {
       int imported = 0;
+      int rejected = 0;
       try {
         List<Uri> uris = new ArrayList<>();
         if (data.getData() != null) {
@@ -130,7 +132,19 @@ public class LivePreviewPreferenceFragment extends PreferenceFragment {
         for (Uri uri : uris) {
           String name = queryDisplayName(uri);
           if (name == null) name = "model_" + System.currentTimeMillis() + ".onnx";
-          if (!name.toLowerCase().endsWith(".onnx")) name += ".onnx";
+          if (!name.toLowerCase().endsWith(".onnx")) {
+            Toast.makeText(getActivity(), "「" + name + "」不是 .onnx 文件，已跳过",
+                Toast.LENGTH_LONG).show();
+            rejected++;
+            continue;
+          }
+          long firstByte = peekFirstByte(uri);
+          if (firstByte != 0x08) {
+            Toast.makeText(getActivity(), "「" + name + "」不是有效的 ONNX 模型文件，已跳过",
+                Toast.LENGTH_LONG).show();
+            rejected++;
+            continue;
+          }
           try (InputStream in = getActivity().getContentResolver().openInputStream(uri);
                OutputStream out = new FileOutputStream(new File(dir, name))) {
             byte[] buf = new byte[65536];
@@ -146,9 +160,26 @@ public class LivePreviewPreferenceFragment extends PreferenceFragment {
         Toast.makeText(getActivity(), "已导入 " + imported + " 个 ONNX 模型", Toast.LENGTH_LONG).show();
         refreshModelListPreference();
       }
+      if (imported == 0 && rejected > 0) {
+        Toast.makeText(getActivity(), "没有导入任何文件（全部被拒绝）", Toast.LENGTH_LONG).show();
+      }
       return;
     }
     super.onActivityResult(requestCode, resultCode, data);
+  }
+
+  /**
+   * Returns the first byte of the URI content, or -1 when unreadable. A real
+   * ONNX pb file starts with {@code 0x08} (protobuf field-1 varint), so this
+   * cheap check rejects text files / renamed junk.
+   */
+  private long peekFirstByte(Uri uri) {
+    try (InputStream in = getActivity().getContentResolver().openInputStream(uri)) {
+      if (in == null) return -1;
+      return in.read();
+    } catch (Exception e) {
+      return -1;
+    }
   }
 
   private String queryDisplayName(Uri uri) {

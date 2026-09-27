@@ -241,7 +241,8 @@ public class PreferenceUtils {
 
   /**
    * Our modification: the model that will actually run = the first selected one
-   * in canonical catalog order (ML Kit -> ncnn -> ONNX -> imported).
+   * in canonical catalog order (ML Kit -> ncnn -> ONNX -> imported). Returns
+   * {@code null} when the user cleared every checkbox (nothing should run).
    */
   public static String getFirstSelectedModel(Context context) {
     Set<String> selected = getSelectedModels(context);

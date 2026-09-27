@@ -93,7 +93,9 @@ public class NcnnPoseProcessor extends VisionProcessorBase<NcnnPoseProcessor.Res
       long t0 = System.currentTimeMillis();
       NcnnYolo11 e = new NcnnYolo11();
       if (!e.loadModel(context.getAssets(), taskId, modelId, cpugpu)) {
-        ErrorLog.e(TAG, "ncnn 模型加载失败(" + TASK_NAMES[taskId] + " size=" + modelId + " cpugpu=" + cpugpu + ")");
+        String msg = "ncnn 模型加载失败(" + TASK_NAMES[taskId] + " size=" + modelId + " cpugpu=" + cpugpu + ")";
+        ErrorLog.e(TAG, msg);
+        showOnce(msg);
         return false;
       }
       engine = e;
@@ -105,7 +107,17 @@ public class NcnnPoseProcessor extends VisionProcessorBase<NcnnPoseProcessor.Res
       return true;
     } catch (Throwable t) {
       ErrorLog.e(TAG, "ncnn 模型加载失败", t);
+      showOnce("ncnn 模型加载失败: " + t);
       return false;
+    }
+  }
+
+  /** Shows a one-time toast in the hosting activity (if it is one). */
+  private void showOnce(String msg) {
+    if (context instanceof android.app.Activity) {
+      ((android.app.Activity) context).runOnUiThread(() ->
+          android.widget.Toast.makeText(context, msg + "（右上角菜单可复制错误日志）",
+              android.widget.Toast.LENGTH_LONG).show());
     }
   }
 
