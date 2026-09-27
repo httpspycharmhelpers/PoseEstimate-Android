@@ -63,5 +63,33 @@
         android:summary="@string/pref_summary_yolo_mode"
         android:title="@string/pref_title_yolo_mode"/>
 
+    <!-- Our modifications: NCNN model engine settings (sg.md "NNCN Model(YOLOv11)") -->
+    <ListPreference
+        android:defaultValue="@string/pref_entry_values_ncnn_task_pose"
+        android:entries="@array/pref_entries_ncnn_task"
+        android:entryValues="@array/pref_entry_values_ncnn_task"
+        android:key="@string/pref_key_ncnn_task"
+        android:persistent="true"
+        android:summary="%s"
+        android:title="@string/pref_title_ncnn_task"/>
+
+    <ListPreference
+        android:defaultValue="@string/pref_entry_values_ncnn_size_n640"
+        android:entries="@array/pref_entries_ncnn_size"
+        android:entryValues="@array/pref_entry_values_ncnn_size"
+        android:key="@string/pref_key_ncnn_size"
+        android:persistent="true"
+        android:summary="%s"
+        android:title="@string/pref_title_ncnn_size"/>
+
+    <ListPreference
+        android:defaultValue="@string/pref_entry_values_ncnn_cpugpu_cpu"
+        android:entries="@array/pref_entries_ncnn_cpugpu"
+        android:entryValues="@array/pref_entry_values_ncnn_cpugpu"
+        android:key="@string/pref_key_ncnn_cpugpu"
+        android:persistent="true"
+        android:summary="%s"
+        android:title="@string/pref_title_ncnn_cpugpu"/>
+
   </PreferenceCategory>
 </PreferenceScreen>

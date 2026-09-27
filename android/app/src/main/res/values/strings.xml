@@ -131,4 +131,53 @@
     <string name="pref_key_yolo_mode" translatable="false">ym</string>
     <string name="pref_title_yolo_mode">YOLO Mode</string>
     <string name="pref_summary_yolo_mode">开启后用 YOLOv11 检测物体（默认关闭）</string>
+
+    <!-- Our modification: NCNN model task select (sg.md "NNCN Model(YOLOv11)") -->
+    <string name="pref_key_ncnn_task" translatable="false">ncnnt</string>
+    <string name="pref_title_ncnn_task">NNCN Model (YOLOv11)</string>
+    <string name="pref_summary_ncnn_task">选择 NCNN 引擎任务模型</string>
+    <string name="pref_entries_ncnn_task_coco" translatable="false">COCO (物体检测)</string>
+    <string name="pref_entry_values_ncnn_task_coco" translatable="false">0</string>
+    <string name="pref_entries_ncnn_task_seg" translatable="false">SEG (分割)</string>
+    <string name="pref_entry_values_ncnn_task_seg" translatable="false">1</string>
+    <string name="pref_entries_ncnn_task_pose" translatable="false">Pose (姿态)</string>
+    <string name="pref_entry_values_ncnn_task_pose" translatable="false">2</string>
+    <string name="pref_entries_ncnn_task_cls" translatable="false">CLS (分类)</string>
+    <string name="pref_entry_values_ncnn_task_cls" translatable="false">3</string>
+    <string name="pref_entries_ncnn_task_obb" translatable="false">OBB (旋转框)</string>
+    <string name="pref_entry_values_ncnn_task_obb" translatable="false">4</string>
+
+    <!-- Our modification: NCNN model size select (n-320 / s-320 / ... / m-640) -->
+    <string name="pref_key_ncnn_size" translatable="false">ncnns</string>
+    <string name="pref_title_ncnn_size">NCNN 模型尺寸</string>
+    <string name="pref_summary_ncnn_size">速度 vs 精度：n 最快，m 最准；320 快，640 准</string>
+    <string name="pref_entries_ncnn_size_n320" translatable="false">n-320</string>
+    <string name="pref_entry_values_ncnn_size_n320" translatable="false">0</string>
+    <string name="pref_entries_ncnn_size_s320" translatable="false">s-320</string>
+    <string name="pref_entry_values_ncnn_size_s320" translatable="false">1</string>
+    <string name="pref_entries_ncnn_size_m320" translatable="false">m-320</string>
+    <string name="pref_entry_values_ncnn_size_m320" translatable="false">2</string>
+    <string name="pref_entries_ncnn_size_n480" translatable="false">n-480</string>
+    <string name="pref_entry_values_ncnn_size_n480" translatable="false">3</string>
+    <string name="pref_entries_ncnn_size_s480" translatable="false">s-480</string>
+    <string name="pref_entry_values_ncnn_size_s480" translatable="false">4</string>
+    <string name="pref_entries_ncnn_size_m480" translatable="false">m-480</string>
+    <string name="pref_entry_values_ncnn_size_m480" translatable="false">5</string>
+    <string name="pref_entries_ncnn_size_n640" translatable="false">n-640</string>
+    <string name="pref_entry_values_ncnn_size_n640" translatable="false">6</string>
+    <string name="pref_entries_ncnn_size_s640" translatable="false">s-640</string>
+    <string name="pref_entry_values_ncnn_size_s640" translatable="false">7</string>
+    <string name="pref_entries_ncnn_size_m640" translatable="false">m-640</string>
+    <string name="pref_entry_values_ncnn_size_m640" translatable="false">8</string>
+
+    <!-- Our modification: NCNN CPU/GPU compute select -->
+    <string name="pref_key_ncnn_cpugpu" translatable="false">ncnng</string>
+    <string name="pref_title_ncnn_cpugpu">NCNN 计算方式</string>
+    <string name="pref_summary_ncnn_cpugpu">默认 CPU 最稳定；GPU(Vulkan) 更快但个别机型可能失败</string>
+    <string name="pref_entries_ncnn_cpugpu_cpu" translatable="false">CPU</string>
+    <string name="pref_entry_values_ncnn_cpugpu_cpu" translatable="false">0</string>
+    <string name="pref_entries_ncnn_cpugpu_gpu" translatable="false">GPU (Vulkan)</string>
+    <string name="pref_entry_values_ncnn_cpugpu_gpu" translatable="false">1</string>
+    <string name="pref_entries_ncnn_cpugpu_turnip" translatable="false">GPU (Turnip)</string>
+    <string name="pref_entry_values_ncnn_cpugpu_turnip" translatable="false">2</string>
 </resources>

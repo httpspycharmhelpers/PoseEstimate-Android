@@ -46,7 +46,10 @@ extern "C" {
 
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
-    ncnn::create_gpu_instance();
+    // NOTE: do NOT create the GPU instance here. Vulkan drivers are flaky on
+    // some devices and initializing at library load time can crash the process
+    // even in CPU mode. We create/destroy it only in loadModel when the user
+    // actually selects GPU compute.
     return JNI_VERSION_1_4;
 }
 
@@ -88,8 +91,18 @@ Java_com_google_mlkit_vision_demo_java_ncnn_NcnnYolo11_loadModel(
     {
         ncnn::MutexLockGuard g(lock);
 
-        if (use_gpu || use_turnip) ncnn::create_gpu_instance();
-        else                       ncnn::destroy_gpu_instance();
+        if (use_gpu || use_turnip)
+        {
+            if (ncnn::create_gpu_instance() != 0)
+            {
+                __android_log_print(ANDROID_LOG_ERROR, "ncnn", "create_gpu_instance failed");
+                return JNI_FALSE;
+            }
+        }
+        else
+        {
+            ncnn::destroy_gpu_instance();
+        }
 
         // Store the requested detector, load on first detect to keep the UI
         // thread responsive (lazy load like our YoloDetector).

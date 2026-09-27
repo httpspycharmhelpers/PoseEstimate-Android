@@ -193,5 +193,26 @@ public class PreferenceUtils {
     return sharedPreferences.getBoolean(prefKey, false);
   }
 
+  /** Our modification: NCNN task id (0=COCO,1=SEG,2=Pose,3=CLS,4=OBB). Default Pose. */
+  public static int getNcnnTask(Context context) {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    String prefKey = context.getString(R.string.pref_key_ncnn_task);
+    return Integer.parseInt(sharedPreferences.getString(prefKey, "2"));
+  }
+
+  /** Our modification: NCNN model size index (0..8 = n/s/m x 320/480/640). Default n-640. */
+  public static int getNcnnSize(Context context) {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    String prefKey = context.getString(R.string.pref_key_ncnn_size);
+    return Integer.parseInt(sharedPreferences.getString(prefKey, "6"));
+  }
+
+  /** Our modification: NCNN compute (0=CPU,1=GPU,2=GPU/Turnip). Default CPU (most stable). */
+  public static int getNcnnCpuGpu(Context context) {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    String prefKey = context.getString(R.string.pref_key_ncnn_cpugpu);
+    return Integer.parseInt(sharedPreferences.getString(prefKey, "0"));
+  }
+
   private PreferenceUtils() {}
 }

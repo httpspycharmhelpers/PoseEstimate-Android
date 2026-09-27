@@ -200,11 +200,14 @@ public final class LivePreviewActivity extends AppCompatActivity
             cameraSource.setMachineLearningFrameProcessor(
                 new YoloPoseProcessor(this, yoloMode, jumperMode));
           } else if (engine == ENGINE_NCNN) {
-            Log.i(TAG, "Using ncnn pose engine, yoloMode=" + yoloMode
-                + " jumperMode=" + jumperMode);
+            int ncnnTask = PreferenceUtils.getNcnnTask(this);
+            int ncnnSize = PreferenceUtils.getNcnnSize(this);
+            int ncnnCpuGpu = PreferenceUtils.getNcnnCpuGpu(this);
+            Log.i(TAG, "Using ncnn engine task=" + ncnnTask + " size=" + ncnnSize
+                + " cpugpu=" + ncnnCpuGpu + " jumperMode=" + jumperMode);
+            // Pose task may share the jump rope counter only when task == Pose.
             cameraSource.setMachineLearningFrameProcessor(
-                new NcnnPoseProcessor(this, jumperMode,
-                    NcnnPoseProcessor.MODEL_N640, NcnnPoseProcessor.CPUGPU_GPU));
+                new NcnnPoseProcessor(this, jumperMode && ncnnTask == 2, ncnnTask, ncnnSize, ncnnCpuGpu));
           } else {
             PoseDetectorOptionsBase poseDetectorOptions =
                 PreferenceUtils.getPoseDetectorOptionsForLivePreview(this);
