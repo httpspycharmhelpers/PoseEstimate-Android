@@ -54,6 +54,7 @@ public class NcnnPoseProcessor extends VisionProcessorBase<NcnnPoseProcessor.Res
   private final String[] cocoLabels;
 
   private final AtomicBoolean loadStarted = new AtomicBoolean(false);
+  private final AtomicBoolean busy = new AtomicBoolean(false);
   private final JumpRopeAdapter ropeAdapter = new JumpRopeAdapter();
   private final ExecutorService detectorThread = Executors.newSingleThreadExecutor();
   private volatile boolean firstFailureShown;
@@ -126,33 +127,45 @@ public class NcnnPoseProcessor extends VisionProcessorBase<NcnnPoseProcessor.Res
     final int fh = frame.getHeight();
     final int[] argb = new int[fw * fh];
 
+    // Drop this frame when the previous one is still being processed. This
+    // keeps the camera preview fluid on slow devices (single-thread executor
+    // would otherwise queue up every frame and lag increasingly).
+    if (!busy.compareAndSet(false, true)) {
+      tcs.setResult(new Result(new NcnnYolo11.Result[0], taskId));
+      return tcs.getTask();
+    }
+
     detectorThread.execute(() -> {
-      if (!ensureLoaded()) {
-        tcs.setResult(new Result(new NcnnYolo11.Result[0], taskId));
-        return;
-      }
-      long t0 = System.currentTimeMillis();
       try {
-        frame.getPixels(argb, 0, fw, 0, 0, fw, fh);
-        float[] flat = engine.detect(argb, fw, fh);
-        NcnnYolo11.Result[] items = NcnnYolo11.parse(flat);
-        long dt = System.currentTimeMillis() - t0;
-        if (dt >= 100 || firstFrameLoggedAt == 0) {
-          if (firstFrameLoggedAt == 0) {
-            firstFrameLoggedAt = System.currentTimeMillis();
-            ErrorLog.i(TAG, String.format("ncnn 首次推理完成: %s %d个 %dms",
-                TASK_NAMES[taskId], items.length, dt));
-          } else if (dt >= 100) {
-            ErrorLog.i(TAG, String.format("ncnn 推理: %s %d个 %dms", TASK_NAMES[taskId], items.length, dt));
+        if (!ensureLoaded()) {
+          tcs.setResult(new Result(new NcnnYolo11.Result[0], taskId));
+          return;
+        }
+        long t0 = System.currentTimeMillis();
+        try {
+          frame.getPixels(argb, 0, fw, 0, 0, fw, fh);
+          float[] flat = engine.detect(argb, fw, fh);
+          NcnnYolo11.Result[] items = NcnnYolo11.parse(flat);
+          long dt = System.currentTimeMillis() - t0;
+          if (dt >= 100 || firstFrameLoggedAt == 0) {
+            if (firstFrameLoggedAt == 0) {
+              firstFrameLoggedAt = System.currentTimeMillis();
+              ErrorLog.i(TAG, String.format("ncnn 首次推理完成: %s %d个 %dms",
+                  TASK_NAMES[taskId], items.length, dt));
+            } else if (dt >= 100) {
+              ErrorLog.i(TAG, String.format("ncnn 推理: %s %d个 %dms", TASK_NAMES[taskId], items.length, dt));
+            }
           }
+          tcs.setResult(new Result(items, taskId));
+        } catch (Throwable t) {
+          if (!firstFailureShown) {
+            firstFailureShown = true;
+            ErrorLog.e(TAG, "ncnn 推理失败", t);
+          }
+          tcs.setResult(new Result(new NcnnYolo11.Result[0], taskId));
         }
-        tcs.setResult(new Result(items, taskId));
-      } catch (Throwable t) {
-        if (!firstFailureShown) {
-          firstFailureShown = true;
-          ErrorLog.e(TAG, "ncnn 推理失败", t);
-        }
-        tcs.setResult(new Result(new NcnnYolo11.Result[0], taskId));
+      } finally {
+        busy.set(false);
       }
     });
     return tcs.getTask();

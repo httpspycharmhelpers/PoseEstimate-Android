@@ -8,6 +8,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,6 +60,28 @@ public class YoloDetector {
                 s = env.createSession(bytes, nn);
             } catch (OrtException | UnsatisfiedLinkError e) {
                 // NNAPI rejected the graph; fall back to CPU only.
+                OrtSession.SessionOptions cpu = new OrtSession.SessionOptions();
+                cpu.setIntraOpNumThreads(2);
+                s = env.createSession(bytes, cpu);
+            }
+            session = s;
+        }
+        Set<String> ins = session.getInputNames();
+        inputName = ins.isEmpty() ? "images" : ins.iterator().next();
+    }
+
+    /** Loads a user-supplied ONNX model from an internal-storage file. */
+    public YoloDetector(File modelFile) throws IOException, OrtException {
+        env = OrtEnvironment.getEnvironment();
+        try (InputStream is = new FileInputStream(modelFile)) {
+            byte[] bytes = is.readAllBytes();
+            OrtSession s;
+            try {
+                OrtSession.SessionOptions nn = new OrtSession.SessionOptions();
+                nn.setIntraOpNumThreads(2);
+                try { nn.addNnapi(); } catch (OrtException ignored) {}
+                s = env.createSession(bytes, nn);
+            } catch (OrtException | UnsatisfiedLinkError e) {
                 OrtSession.SessionOptions cpu = new OrtSession.SessionOptions();
                 cpu.setIntraOpNumThreads(2);
                 s = env.createSession(bytes, cpu);

@@ -31,6 +31,7 @@ import com.google.mlkit.vision.demo.R;
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
 import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions;
 import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions;
+import java.util.Set;
 
 /** Utility class to retrieve shared preferences. */
 public class PreferenceUtils {
@@ -229,6 +230,22 @@ public class PreferenceUtils {
     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     String prefKey = context.getString(R.string.pref_key_ncnn_cpugpu);
     return Integer.parseInt(sharedPreferences.getString(prefKey, "0"));
+  }
+
+  /** Our modification: the multi-selected model set. Default = ML Kit. */
+  public static Set<String> getSelectedModels(Context context) {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    String prefKey = context.getString(R.string.pref_key_ncnn_models);
+    return sharedPreferences.getStringSet(prefKey, null);
+  }
+
+  /**
+   * Our modification: the model that will actually run = the first selected one
+   * in canonical catalog order (ML Kit -> ncnn -> ONNX -> imported).
+   */
+  public static String getFirstSelectedModel(Context context) {
+    Set<String> selected = getSelectedModels(context);
+    return com.google.mlkit.vision.demo.java.ModelCatalog.firstSelected(context, selected);
   }
 
   private PreferenceUtils() {}

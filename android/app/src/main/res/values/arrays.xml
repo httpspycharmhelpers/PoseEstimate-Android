@@ -1,81 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-
-
-  <string-array name="pref_entries_values_pose_detector_performance_mode">
-    <item>@string/pref_entries_pose_detector_performance_mode_fast</item>
-    <item>@string/pref_entries_pose_detector_performance_mode_accurate</item>
-    <item>@string/pref_entries_pose_detector_performance_mode_yolo</item>
-    <item>@string/pref_entries_pose_detector_performance_mode_ncnn_p</item>
-  </string-array>
-
-  <string-array name="pref_entry_values_pose_detector_performance_mode">
-    <item>@string/pref_entry_values_pose_detector_performance_mode_fast</item>
-    <item>@string/pref_entry_values_pose_detector_performance_mode_accurate</item>
-    <item>@string/pref_entry_values_pose_detector_performance_mode_yolo</item>
-    <item>@string/pref_entry_values_pose_detector_performance_mode_ncnn_p</item>
-  </string-array>
-
-  <string-array name="pref_entries_ncnn_task">
-    <item>@string/pref_entries_ncnn_task_coco</item>
-    <item>@string/pref_entries_ncnn_task_seg</item>
-    <item>@string/pref_entries_ncnn_task_pose</item>
-    <item>@string/pref_entries_ncnn_task_cls</item>
-    <item>@string/pref_entries_ncnn_task_obb</item>
-  </string-array>
-
-  <string-array name="pref_entry_values_ncnn_task">
-    <item>@string/pref_entry_values_ncnn_task_coco</item>
-    <item>@string/pref_entry_values_ncnn_task_seg</item>
-    <item>@string/pref_entry_values_ncnn_task_pose</item>
-    <item>@string/pref_entry_values_ncnn_task_cls</item>
-    <item>@string/pref_entry_values_ncnn_task_obb</item>
-  </string-array>
-
-  <string-array name="pref_entries_ncnn_size">
-    <item>@string/pref_entries_ncnn_size_n320</item>
-    <item>@string/pref_entries_ncnn_size_s320</item>
-    <item>@string/pref_entries_ncnn_size_m320</item>
-    <item>@string/pref_entries_ncnn_size_n480</item>
-    <item>@string/pref_entries_ncnn_size_s480</item>
-    <item>@string/pref_entries_ncnn_size_m480</item>
-    <item>@string/pref_entries_ncnn_size_n640</item>
-    <item>@string/pref_entries_ncnn_size_s640</item>
-    <item>@string/pref_entries_ncnn_size_m640</item>
-  </string-array>
-
-  <string-array name="pref_entry_values_ncnn_size">
-    <item>@string/pref_entry_values_ncnn_size_n320</item>
-    <item>@string/pref_entry_values_ncnn_size_s320</item>
-    <item>@string/pref_entry_values_ncnn_size_m320</item>
-    <item>@string/pref_entry_values_ncnn_size_n480</item>
-    <item>@string/pref_entry_values_ncnn_size_s480</item>
-    <item>@string/pref_entry_values_ncnn_size_m480</item>
-    <item>@string/pref_entry_values_ncnn_size_n640</item>
-    <item>@string/pref_entry_values_ncnn_size_s640</item>
-    <item>@string/pref_entry_values_ncnn_size_m640</item>
+  <!-- Default selection: ML Kit native pose (fast & works offline). Value id "mlkit". -->
+  <string-array name="pref_default_ncnn_models">
+    <item>mlkit</item>
   </string-array>
 
   <string-array name="pref_entries_ncnn_cpugpu">
-    <item>@string/pref_entries_ncnn_cpugpu_cpu</item>
-    <item>@string/pref_entries_ncnn_cpugpu_gpu</item>
-    <item>@string/pref_entries_ncnn_cpugpu_turnip</item>
+    <item>CPU</item>
+    <item>GPU (Vulkan)</item>
+    <item>GPU (Turnip)</item>
   </string-array>
 
   <string-array name="pref_entry_values_ncnn_cpugpu">
-    <item>@string/pref_entry_values_ncnn_cpugpu_cpu</item>
-    <item>@string/pref_entry_values_ncnn_cpugpu_gpu</item>
-    <item>@string/pref_entry_values_ncnn_cpugpu_turnip</item>
-  </string-array>
-
-  <string-array name="pref_entries_yolo11_onnx_model">
-    <item>@string/pref_entries_yolo11_onnx_n</item>
-    <item>@string/pref_entries_yolo11_onnx_pose</item>
-  </string-array>
-
-  <string-array name="pref_entry_values_yolo11_onnx_model">
-    <item>@string/pref_entry_values_yolo11_onnx_n</item>
-    <item>@string/pref_entry_values_yolo11_onnx_pose</item>
+    <item>0</item>
+    <item>1</item>
+    <item>2</item>
   </string-array>
 </resources>

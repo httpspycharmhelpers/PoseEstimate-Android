@@ -187,6 +187,17 @@
     <string name="pref_entries_ncnn_size_m640" translatable="false">m-640</string>
     <string name="pref_entry_values_ncnn_size_m640" translatable="false">8</string>
 
+    <!-- Our modification: unified model selector (ML Kit + ncnn + ONNX + imported) -->
+    <string name="pref_key_ncnn_models" translatable="false">nms</string>
+    <string name="pref_title_ncnn_models">模型选择</string>
+    <string name="pref_summary_ncnn_models">勾选你想用的模型（可多选，运行第一个勾选的）</string>
+    <string name="pref_key_model_group" translatable="false">pmg</string>
+    <string name="pref_title_model_group">Model</string>
+    <string name="pref_key_import_onnx" translatable="false">nio</string>
+    <string name="pref_title_import_onnx">导入 ONNX 模型</string>
+    <string name="pref_summary_import_onnx">从文件选择器选择一个 .onnx 模型加入列表</string>
+    <string name="pref_default_ncnn_models_mlkit" translatable="false">mlkit</string>
+
     <!-- Our modification: NCNN CPU/GPU compute select -->
     <string name="pref_key_ncnn_cpugpu" translatable="false">ncnng</string>
     <string name="pref_title_ncnn_cpugpu">NCNN 计算方式</string>

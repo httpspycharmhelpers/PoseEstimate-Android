@@ -53,6 +53,8 @@ import com.google.mlkit.vision.demo.java.posedetector.PoseDetectorProcessor;
 import com.google.mlkit.vision.demo.java.posedetector.YoloPoseProcessor;
 import com.google.mlkit.vision.demo.java.posedetector.PoseGraphic;
 import com.google.mlkit.vision.demo.java.ncnn.NcnnPoseProcessor;
+import com.google.mlkit.vision.demo.java.ncnn.NcnnYolo11;
+import com.google.mlkit.vision.demo.java.yolo.ImportedOnnxProcessor;
 import com.google.mlkit.vision.demo.preference.PreferenceUtils;
 import com.google.mlkit.vision.demo.preference.SettingsActivity;
 import com.google.mlkit.vision.demo.preference.SettingsActivity.LaunchSource;
@@ -188,42 +190,9 @@ public final class LivePreviewActivity extends AppCompatActivity
     try {
       switch (model) {
         case POSE_DETECTION:
-          boolean yoloMode = PreferenceUtils.isYoloModeEnabled(this);
-          boolean jumperMode = PreferenceUtils.isJumpRopeModeEnabled(this);
-          int engine = PreferenceUtils.getLivePreviewPoseEngine(this);
-          final int ENGINE_NATIVE = 1;
-          final int ENGINE_YOLO = 2;
-          final int ENGINE_NCNN = 4;
-          if (engine == 0) {
-            // sg.md: Pose mode 关闭 -> 不加载任何 Pose 模型。YOLO Mode 仍可用。
-            Log.i(TAG, "Pose mode is OFF, yoloMode=" + yoloMode);
-            cameraSource.setMachineLearningFrameProcessor(
-                new YoloPoseProcessor(this, yoloMode, false, false));
-          } else if (engine == ENGINE_YOLO) {
-            Log.i(TAG, "Using YOLOv11 pose engine, yoloMode=" + yoloMode
-                + " jumperMode=" + jumperMode);
-            cameraSource.setMachineLearningFrameProcessor(
-                new YoloPoseProcessor(this, yoloMode, jumperMode, true));
-          } else if (engine == ENGINE_NCNN) {
-            int ncnnTask = PreferenceUtils.getNcnnTask(this);
-            int ncnnSize = PreferenceUtils.getNcnnSize(this);
-            int ncnnCpuGpu = PreferenceUtils.getNcnnCpuGpu(this);
-            Log.i(TAG, "Using ncnn engine task=" + ncnnTask + " size=" + ncnnSize
-                + " cpugpu=" + ncnnCpuGpu + " jumperMode=" + jumperMode);
-            // Pose task may share the jump rope counter only when task == Pose.
-            cameraSource.setMachineLearningFrameProcessor(
-                new NcnnPoseProcessor(this, jumperMode && ncnnTask == 2, ncnnTask, ncnnSize, ncnnCpuGpu));
-          } else {
-            PoseDetectorOptionsBase poseDetectorOptions =
-                PreferenceUtils.getPoseDetectorOptionsForLivePreview(this);
-            boolean shouldShowInFrameLikelihood =
-                PreferenceUtils.shouldShowPoseDetectionInFrameLikelihoodLivePreview(this);
-            Log.i(TAG, "Using native pose detector with options " + poseDetectorOptions
-                + " yoloMode=" + yoloMode + " jumperMode=" + jumperMode);
-            cameraSource.setMachineLearningFrameProcessor(
-                new PoseDetectorProcessor(this, poseDetectorOptions, shouldShowInFrameLikelihood,
-                    yoloMode, jumperMode));
-          }
+          String msg = "选择模型: " + PreferenceUtils.getFirstSelectedModel(this);
+          Log.i(TAG, msg);
+          createProcessorFromSelection();
           break;
         default:
           Log.e(TAG, "Unknown model: " + model);
@@ -235,6 +204,71 @@ public final class LivePreviewActivity extends AppCompatActivity
               "Can not create image processor: " + e.getMessage(),
               Toast.LENGTH_LONG)
           .show();
+    }
+  }
+
+  /**
+   * Unified processor dispatch: runs the FIRST selected model from the settings
+   * multi-select (ML Kit / ncnn / builtin ONNX / imported ONNX).
+   */
+  private void createProcessorFromSelection() {
+    String first = PreferenceUtils.getFirstSelectedModel(this);
+    boolean jumperMode = PreferenceUtils.isJumpRopeModeEnabled(this);
+    try {
+      if (first.equals(com.google.mlkit.vision.demo.java.ModelCatalog.MLKIT)) {
+        Log.i(TAG, "Using ML Kit native pose");
+        PoseDetectorOptionsBase poseDetectorOptions =
+            PreferenceUtils.getPoseDetectorOptionsForLivePreview(this);
+        boolean shouldShowInFrameLikelihood =
+            PreferenceUtils.shouldShowPoseDetectionInFrameLikelihoodLivePreview(this);
+        cameraSource.setMachineLearningFrameProcessor(
+            new PoseDetectorProcessor(this, poseDetectorOptions, shouldShowInFrameLikelihood,
+                false, jumperMode));
+        return;
+      }
+      if (first.startsWith("ncnn:")) {
+        String[] p = first.split(":");
+        int ncnnTask = Integer.parseInt(p[1]);
+        int ncnnSize = Integer.parseInt(p[2]);
+        int ncnnCpuGpu = PreferenceUtils.getNcnnCpuGpu(this);
+        Log.i(TAG, "Using ncnn engine task=" + ncnnTask + " size=" + ncnnSize
+            + " cpugpu=" + ncnnCpuGpu + " jumperMode=" + jumperMode);
+        cameraSource.setMachineLearningFrameProcessor(new NcnnPoseProcessor(this,
+            jumperMode && ncnnTask == NcnnYolo11.TASK_POSE, ncnnTask, ncnnSize, ncnnCpuGpu));
+        return;
+      }
+      if (first.equals(com.google.mlkit.vision.demo.java.ModelCatalog.ONNX_YOLO11N_POSE)) {
+        Log.i(TAG, "Using ONNX pose engine");
+        cameraSource.setMachineLearningFrameProcessor(new YoloPoseProcessor(this, false,
+            jumperMode, true));
+        return;
+      }
+      if (first.equals(com.google.mlkit.vision.demo.java.ModelCatalog.ONNX_YOLO11N)) {
+        Log.i(TAG, "Using ONNX COCO detection engine");
+        cameraSource.setMachineLearningFrameProcessor(new YoloPoseProcessor(this, true,
+            false, false));
+        return;
+      }
+      if (first.startsWith(com.google.mlkit.vision.demo.java.ModelCatalog.ONNX_IMPORT_PREFIX)) {
+        String name = first.substring(
+            com.google.mlkit.vision.demo.java.ModelCatalog.ONNX_IMPORT_PREFIX.length());
+        Log.i(TAG, "Using imported ONNX: " + name);
+        cameraSource.setMachineLearningFrameProcessor(
+            new ImportedOnnxProcessor(this, name, jumperMode));
+        return;
+      }
+      Log.e(TAG, "Unrecognized model value: " + first);
+      // Fallback: ML Kit.
+      PoseDetectorOptionsBase poseDetectorOptions =
+          PreferenceUtils.getPoseDetectorOptionsForLivePreview(this);
+      cameraSource.setMachineLearningFrameProcessor(
+          new PoseDetectorProcessor(this, poseDetectorOptions,
+              PreferenceUtils.shouldShowPoseDetectionInFrameLikelihoodLivePreview(this),
+              false, jumperMode));
+    } catch (Exception e) {
+      Log.e(TAG, "createProcessorFromSelection failed", e);
+      Toast.makeText(getApplicationContext(), "创建处理器失败: " + e.getMessage(),
+          Toast.LENGTH_LONG).show();
     }
   }
 

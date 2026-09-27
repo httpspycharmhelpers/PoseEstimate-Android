@@ -16,10 +16,17 @@
 
 package com.google.mlkit.vision.demo.preference;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
+import android.preference.MultiSelectListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import androidx.annotation.StringRes;
@@ -27,21 +34,133 @@ import android.widget.Toast;
 import com.google.mlkit.vision.demo.CameraSource;
 import com.google.mlkit.vision.demo.CameraSource.SizePair;
 import com.google.mlkit.vision.demo.R;
+import com.google.mlkit.vision.demo.java.ModelCatalog;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Configures live preview demo settings. */
 public class LivePreviewPreferenceFragment extends PreferenceFragment {
 
   protected boolean isCameraXSetting;
 
+  private static final int REQ_IMPORT_ONNX = 1001;
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     addPreferencesFromResource(R.xml.preference_live_preview_quickstart);
+    refreshModelListPreference();
     setUpCameraPreferences();
+
+    Preference importPref = findPreference(getString(R.string.pref_key_import_onnx));
+    if (importPref != null) {
+      importPref.setOnPreferenceClickListener(pref -> {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/octet-stream", "*/*"});
+        try {
+          startActivityForResult(intent, REQ_IMPORT_ONNX);
+        } catch (Exception e) {
+          Toast.makeText(getActivity(), "无法打开文件选择器: " + e.getMessage(),
+              Toast.LENGTH_LONG).show();
+        }
+        return true;
+      });
+    }
+  }
+
+  /** Fills the unified model MultiSelectListPreference from {@link ModelCatalog}. */
+  private void refreshModelListPreference() {
+    MultiSelectListPreference pref =
+        (MultiSelectListPreference) findPreference(getString(R.string.pref_key_ncnn_models));
+    if (pref == null) return;
+    List<ModelCatalog.Entry> all = ModelCatalog.all(getActivity());
+    String[] entries = new String[all.size()];
+    String[] values = new String[all.size()];
+    for (int i = 0; i < all.size(); i++) {
+      entries[i] = all.get(i).label;
+      values[i] = all.get(i).value;
+    }
+    pref.setEntries(entries);
+    pref.setEntryValues(values);
+
+    Set<String> selected = PreferenceUtils.getSelectedModels(getActivity());
+    if (selected != null) {
+      pref.setValues(new LinkedHashSet<>(selected));
+    }
+    pref.setSummary(getString(R.string.pref_summary_ncnn_models)
+        + "（" + (selected == null ? 1 : selected.size()) + " 个已选）");
+    pref.setOnPreferenceChangeListener((preference, newValue) -> {
+      @SuppressWarnings("unchecked")
+      Set<String> newly = (Set<String>) newValue;
+      String first = ModelCatalog.firstSelected(getActivity(), newly);
+      preference.setSummary(getString(R.string.pref_summary_ncnn_models)
+          + "（" + newly.size() + " 个已选，将运行: " + ModelCatalog.labelFor(getActivity(), first) + "）");
+      return true;
+    });
+  }
+
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (requestCode == REQ_IMPORT_ONNX && resultCode == Activity.RESULT_OK && data != null) {
+      int imported = 0;
+      try {
+        List<Uri> uris = new ArrayList<>();
+        if (data.getData() != null) {
+          uris.add(data.getData());
+        }
+        if (data.getClipData() != null) {
+          for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+            uris.add(data.getClipData().getItemAt(i).getUri());
+          }
+        }
+        File dir = ModelCatalog.importDir(getActivity());
+        if (!dir.exists()) dir.mkdirs();
+        for (Uri uri : uris) {
+          String name = queryDisplayName(uri);
+          if (name == null) name = "model_" + System.currentTimeMillis() + ".onnx";
+          if (!name.toLowerCase().endsWith(".onnx")) name += ".onnx";
+          try (InputStream in = getActivity().getContentResolver().openInputStream(uri);
+               OutputStream out = new FileOutputStream(new File(dir, name))) {
+            byte[] buf = new byte[65536];
+            int n;
+            while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+          }
+          imported++;
+        }
+      } catch (Exception e) {
+        Toast.makeText(getActivity(), "导入失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
+      }
+      if (imported > 0) {
+        Toast.makeText(getActivity(), "已导入 " + imported + " 个 ONNX 模型", Toast.LENGTH_LONG).show();
+        refreshModelListPreference();
+      }
+      return;
+    }
+    super.onActivityResult(requestCode, resultCode, data);
+  }
+
+  private String queryDisplayName(Uri uri) {
+    String name = null;
+    try (android.database.Cursor c = getActivity().getContentResolver().query(
+        uri, null, null, null, null)) {
+      if (c != null && c.moveToFirst()) {
+        int idx = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+        if (idx >= 0) name = c.getString(idx);
+      }
+    } catch (Exception ignore) {}
+    return name;
   }
 
   private void setUpCameraPreferences() {

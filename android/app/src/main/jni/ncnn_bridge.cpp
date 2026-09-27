@@ -95,8 +95,14 @@ Java_com_google_mlkit_vision_demo_java_ncnn_NcnnYolo11_loadModel(
         {
             if (ncnn::create_gpu_instance() != 0)
             {
-                __android_log_print(ANDROID_LOG_ERROR, "ncnn", "create_gpu_instance failed");
-                return JNI_FALSE;
+                // GPU driver/driver init failed -> fall back to CPU instead of
+                // failing the whole model. This fixes "model won't load" errors
+                // on devices with flaky Vulkan drivers.
+                __android_log_print(ANDROID_LOG_WARN, "ncnn",
+                    "create_gpu_instance failed, falling back to CPU");
+                use_gpu = false;
+                use_turnip = false;
+                ncnn::destroy_gpu_instance();
             }
         }
         else
@@ -114,6 +120,14 @@ Java_com_google_mlkit_vision_demo_java_ncnn_NcnnYolo11_loadModel(
             case 2: slot = &g_pose; break;
             case 3: slot = &g_cls;  break;
             case 4: slot = &g_obb;  break;
+        }
+
+        // If the compute mode changed we must rebuild the detector (ncnn bakes
+        // vulkan/cpu into its runtime options at load time).
+        if (*slot && g_use_gpu != (use_gpu || use_turnip))
+        {
+            delete *slot;
+            *slot = 0;
         }
 
         if (!*slot)

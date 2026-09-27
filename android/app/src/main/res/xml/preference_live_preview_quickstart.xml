@@ -32,67 +32,20 @@
 
   <PreferenceCategory android:title="@string/pref_category_pose_detection">
 
-    <!-- sg.md: Pose mode 开关（关闭后没有任何 Pose 模型） -->
-    <SwitchPreference
-        android:defaultValue="true"
-        android:key="@string/pref_key_pose_mode_switch"
+    <!-- Only one selector: all models (ML Kit + ncnn + builtin ONNX + imported ONNX),
+         multi-select. Entries are populated at runtime in
+         LivePreviewPreferenceFragment#refreshModelListPreference(). -->
+    <MultiSelectListPreference
+        android:key="@string/pref_key_ncnn_models"
+        android:defaultValue="@array/pref_default_ncnn_models"
         android:persistent="true"
-        android:summary="@string/pref_summary_pose_mode_switch"
-        android:title="@string/pref_title_pose_mode_switch"/>
+        android:title="@string/pref_title_ncnn_models"
+        android:summary="@string/pref_summary_ncnn_models"/>
 
-    <!-- sg.md: Pose mode 引擎选择 -->
-    <ListPreference
-        android:defaultValue="@string/pref_entry_values_pose_detector_performance_mode_fast"
-        android:entries="@array/pref_entries_values_pose_detector_performance_mode"
-        android:entryValues="@array/pref_entry_values_pose_detector_performance_mode"
-        android:key="@string/pref_key_live_preview_pose_detection_performance_mode"
-        android:persistent="true"
-        android:title="@string/pref_title_pose_modes"
-        android:summary="%s"/>
-
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="@string/pref_key_jump_rope_mode"
-        android:persistent="true"
-        android:summary="@string/pref_summary_jump_rope_mode"
-        android:title="@string/pref_title_jump_rope_mode"/>
-
-    <!-- sg.md: YOLO Mode 开关 -->
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="@string/pref_key_yolo_mode"
-        android:persistent="true"
-        android:summary="@string/pref_summary_yolo_mode"
-        android:title="@string/pref_title_yolo_mode"/>
-
-    <!-- sg.md: YOLOv11 Mode / ONNX Model 选择 -->
-    <ListPreference
-        android:defaultValue="@string/pref_entry_values_yolo11_onnx_n"
-        android:entries="@array/pref_entries_yolo11_onnx_model"
-        android:entryValues="@array/pref_entry_values_yolo11_onnx_model"
-        android:key="@string/pref_key_yolo11_onnx_model"
-        android:persistent="true"
-        android:summary="@string/pref_summary_yolo11_onnx_model"
-        android:title="@string/pref_title_yolo11_onnx_model"/>
-
-    <!-- sg.md: NNCN Model (YOLOv11) 任务 + 尺寸 -->
-    <ListPreference
-        android:defaultValue="@string/pref_entry_values_ncnn_task_pose"
-        android:entries="@array/pref_entries_ncnn_task"
-        android:entryValues="@array/pref_entry_values_ncnn_task"
-        android:key="@string/pref_key_ncnn_task"
-        android:persistent="true"
-        android:summary="%s"
-        android:title="@string/pref_title_ncnn_task"/>
-
-    <ListPreference
-        android:defaultValue="@string/pref_entry_values_ncnn_size_n640"
-        android:entries="@array/pref_entries_ncnn_size"
-        android:entryValues="@array/pref_entry_values_ncnn_size"
-        android:key="@string/pref_key_ncnn_size"
-        android:persistent="true"
-        android:summary="%s"
-        android:title="@string/pref_title_ncnn_size"/>
+    <Preference
+        android:key="@string/pref_key_import_onnx"
+        android:title="@string/pref_title_import_onnx"
+        android:summary="@string/pref_summary_import_onnx"/>
 
     <ListPreference
         android:defaultValue="@string/pref_entry_values_ncnn_cpugpu_cpu"

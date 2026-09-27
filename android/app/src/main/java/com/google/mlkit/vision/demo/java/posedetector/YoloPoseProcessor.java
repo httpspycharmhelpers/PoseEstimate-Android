@@ -56,6 +56,7 @@ public class YoloPoseProcessor extends VisionProcessorBase<YoloPoseProcessor.Res
   private volatile YoloPoseDetector poseDetector; // lazy, loaded on background thread
   private volatile YoloDetector objectDetector;   // lazy, only in object-detection mode
   private final AtomicBoolean loadStarted = new AtomicBoolean(false);
+  private final AtomicBoolean busy = new AtomicBoolean(false);
   private final String[] objLabels;
   private final JumpRopeAdapter ropeAdapter = new JumpRopeAdapter();
   private final ExecutorService detectorThread = Executors.newSingleThreadExecutor();
@@ -140,39 +141,49 @@ public class YoloPoseProcessor extends VisionProcessorBase<YoloPoseProcessor.Res
       tcs.setResult(new Result(new ArrayList<>(), new ArrayList<>()));
       return tcs.getTask();
     }
+    // Drop this frame when the previous one is still running to avoid queue
+    // backlog on slow devices (keeps the preview fluid).
+    if (!busy.compareAndSet(false, true)) {
+      tcs.setResult(new Result(new ArrayList<>(), new ArrayList<>()));
+      return tcs.getTask();
+    }
     detectorThread.execute(() -> {
-      if (!ensureLoaded()) {
-        tcs.setResult(new Result(new ArrayList<>(), new ArrayList<>()));
-        return;
-      }
-      long t0 = System.currentTimeMillis();
       try {
-        List<YoloPoseDetector.Pose> poses = drawPose
-            ? poseDetector.detect(frame) : new ArrayList<>();
-        List<YoloDetector.Box> objects;
-        if (engine == Engine.POSE_AND_OBJECT && objectDetector != null) {
-          objects = objectDetector.detect(frame);
-        } else {
-          objects = new ArrayList<>();
+        if (!ensureLoaded()) {
+          tcs.setResult(new Result(new ArrayList<>(), new ArrayList<>()));
+          return;
         }
-        long dt = System.currentTimeMillis() - t0;
-        if (dt >= 100 || firstFrameLoggedAt == 0) {
-          if (firstFrameLoggedAt == 0) {
-            firstFrameLoggedAt = System.currentTimeMillis();
-            ErrorLog.i(TAG, String.format("首次推理完成: poses=%d objects=%d %dms",
-                poses.size(), objects.size(), dt));
-          } else if (dt >= 100) {
-            ErrorLog.i(TAG, String.format("推理: poses=%d objects=%d %dms",
-                poses.size(), objects.size(), dt));
+        long t0 = System.currentTimeMillis();
+        try {
+          List<YoloPoseDetector.Pose> poses = drawPose
+              ? poseDetector.detect(frame) : new ArrayList<>();
+          List<YoloDetector.Box> objects;
+          if (engine == Engine.POSE_AND_OBJECT && objectDetector != null) {
+            objects = objectDetector.detect(frame);
+          } else {
+            objects = new ArrayList<>();
           }
+          long dt = System.currentTimeMillis() - t0;
+          if (dt >= 100 || firstFrameLoggedAt == 0) {
+            if (firstFrameLoggedAt == 0) {
+              firstFrameLoggedAt = System.currentTimeMillis();
+              ErrorLog.i(TAG, String.format("首次推理完成: poses=%d objects=%d %dms",
+                  poses.size(), objects.size(), dt));
+            } else if (dt >= 100) {
+              ErrorLog.i(TAG, String.format("推理: poses=%d objects=%d %dms",
+                  poses.size(), objects.size(), dt));
+            }
+          }
+          tcs.setResult(new Result(poses, objects));
+        } catch (Throwable t) {
+          if (!yoloFirstFailureShown) {
+            yoloFirstFailureShown = true;
+            ErrorLog.e(TAG, "YOLO 推理失败", t);
+          }
+          tcs.setResult(new Result(new ArrayList<>(), new ArrayList<>()));
         }
-        tcs.setResult(new Result(poses, objects));
-      } catch (Throwable t) {
-        if (!yoloFirstFailureShown) {
-          yoloFirstFailureShown = true;
-          ErrorLog.e(TAG, "YOLO 推理失败", t);
-        }
-        tcs.setResult(new Result(new ArrayList<>(), new ArrayList<>()));
+      } finally {
+        busy.set(false);
       }
     });
     return tcs.getTask();
