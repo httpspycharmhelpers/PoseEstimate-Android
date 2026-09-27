@@ -68,4 +68,14 @@
     <item>@string/pref_entry_values_ncnn_cpugpu_gpu</item>
     <item>@string/pref_entry_values_ncnn_cpugpu_turnip</item>
   </string-array>
+
+  <string-array name="pref_entries_yolo11_onnx_model">
+    <item>@string/pref_entries_yolo11_onnx_n</item>
+    <item>@string/pref_entries_yolo11_onnx_pose</item>
+  </string-array>
+
+  <string-array name="pref_entry_values_yolo11_onnx_model">
+    <item>@string/pref_entry_values_yolo11_onnx_n</item>
+    <item>@string/pref_entry_values_yolo11_onnx_pose</item>
+  </string-array>
 </resources>

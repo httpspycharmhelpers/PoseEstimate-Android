@@ -24,7 +24,7 @@
     <string name="pref_category_face_detection">Face Detection</string>
     <string name="pref_category_object_detection">Object Detection / Custom Object Detection</string>
     <string name="pref_category_automl">AutoML Image Labeling</string>
-    <string name="pref_category_pose_detection">Pose Detection</string>
+    <string name="pref_category_pose_detection">AI mode</string>
 
     <!-- Strings for camera settings. -->
     <string name="pref_category_key_camera" translatable="false">pckc</string>
@@ -111,11 +111,28 @@
     <string name="pref_entry_values_pose_detector_performance_mode_yolo" translatable="false">3</string>
 
     <!-- Our modification: 4th performance option using the ncnn engine -->
-    <string name="pref_entries_pose_detector_performance_mode_ncnn_p">NCNN Pose</string>
+    <string name="pref_entries_pose_detector_performance_mode_ncnn_p">NNCN Pose</string>
     <string name="pref_entry_values_pose_detector_performance_mode_ncnn_p" translatable="false">4</string>
     <string name="pref_title_pose_detector_native_model">原生模型 (ML Kit)</string>
     <string name="pref_key_pose_detector_native_model" translatable="false">pdnm</string>
     <string name="pref_summary_pose_detector_native_model">关闭后改用我们的 YOLOv11 pose 引擎（即使选择了 Fast/Accurate）</string>
+
+    <!-- sg.md UI 文案: Pose mode 开关（关闭后不加载任何 Pose 模型） -->
+    <string name="pref_key_pose_mode_switch" translatable="false">pms</string>
+    <string name="pref_title_pose_mode_switch">Pose mode</string>
+    <string name="pref_summary_pose_mode_switch">关闭后没有任何 Pose 模型</string>
+
+    <!-- sg.md UI 文案: Pose mode 引擎选择 -->
+    <string name="pref_title_pose_modes">Pose mode</string>
+
+    <!-- sg.md UI 文案: YOLOv11 Mode + ONNX Model 选择 -->
+    <string name="pref_key_yolo11_onnx_model" translatable="false">y11om</string>
+    <string name="pref_title_yolo11_onnx_model">YOLOv11 Mode</string>
+    <string name="pref_summary_yolo11_onnx_model">ONNX Model</string>
+    <string name="pref_entries_yolo11_onnx_n" translatable="false">YOLOv11n</string>
+    <string name="pref_entry_values_yolo11_onnx_n" translatable="false">0</string>
+    <string name="pref_entries_yolo11_onnx_pose" translatable="false">YOLOv11 Pose</string>
+    <string name="pref_entry_values_yolo11_onnx_pose" translatable="false">1</string>
 
     <!-- Strings for pose detector showInFrameLikelihood preference. -->
     <string name="pref_title_pose_detector_show_in_frame_likelihood">Show In-Frame Likelihood </string>
@@ -136,15 +153,15 @@
     <string name="pref_key_ncnn_task" translatable="false">ncnnt</string>
     <string name="pref_title_ncnn_task">NNCN Model (YOLOv11)</string>
     <string name="pref_summary_ncnn_task">选择 NCNN 引擎任务模型</string>
-    <string name="pref_entries_ncnn_task_coco" translatable="false">COCO (物体检测)</string>
+    <string name="pref_entries_ncnn_task_coco">COCO</string>
     <string name="pref_entry_values_ncnn_task_coco" translatable="false">0</string>
-    <string name="pref_entries_ncnn_task_seg" translatable="false">SEG (分割)</string>
+    <string name="pref_entries_ncnn_task_seg">SEG</string>
     <string name="pref_entry_values_ncnn_task_seg" translatable="false">1</string>
-    <string name="pref_entries_ncnn_task_pose" translatable="false">Pose (姿态)</string>
+    <string name="pref_entries_ncnn_task_pose">Pose</string>
     <string name="pref_entry_values_ncnn_task_pose" translatable="false">2</string>
-    <string name="pref_entries_ncnn_task_cls" translatable="false">CLS (分类)</string>
+    <string name="pref_entries_ncnn_task_cls">CLS</string>
     <string name="pref_entry_values_ncnn_task_cls" translatable="false">3</string>
-    <string name="pref_entries_ncnn_task_obb" translatable="false">OBB (旋转框)</string>
+    <string name="pref_entries_ncnn_task_obb">OBB</string>
     <string name="pref_entry_values_ncnn_task_obb" translatable="false">4</string>
 
     <!-- Our modification: NCNN model size select (n-320 / s-320 / ... / m-640) -->

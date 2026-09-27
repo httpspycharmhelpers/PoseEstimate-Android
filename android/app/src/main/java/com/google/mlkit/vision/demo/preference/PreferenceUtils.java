@@ -105,13 +105,30 @@ public class PreferenceUtils {
     return sharedPreferences.getBoolean(prefKey, true);
   }
 
+  /** Our modification (sg.md): Pose mode switch. Off => run no pose engine at all. */
+  public static boolean isPoseModeEnabled(Context context) {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    String prefKey = context.getString(R.string.pref_key_pose_mode_switch);
+    return sharedPreferences.getBoolean(prefKey, true);
+  }
+
+  /** Our modification (sg.md): YOLOv11 Mode / ONNX Model. 0=YOLOv11n (det), 1=YOLOv11 Pose. */
+  public static int getYolo11OnnxModel(Context context) {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    String prefKey = context.getString(R.string.pref_key_yolo11_onnx_model);
+    return Integer.parseInt(sharedPreferences.getString(prefKey, "0"));
+  }
+
   /**
    * Our modification: which skeleton engine should we run?
-   * Returns 1 = native ML Kit, 2 = our YOLOv11 pose, 4 = our ncnn pose.
-   * YOLOv11/ncnn wins when the performance mode is "3"/"4" OR the native
-   * model is turned off (falls back to our own skeleton engine).
+   * Returns 0 = off (Pose mode disabled), 1 = native ML Kit, 2 = YOLOv11 pose,
+   * 4 = ncnn pose. YOLOv11/ncnn win when the performance mode is "3"/"4" OR
+   * the native model is turned off (falls back to our engine).
    */
   public static int getLivePreviewPoseEngine(Context context) {
+    if (!isPoseModeEnabled(context)) {
+      return 0; // sg.md: Pose mode 关闭后没有 Pose 模型
+    }
     int performanceMode =
         getModeTypePreferenceValue(
             context,

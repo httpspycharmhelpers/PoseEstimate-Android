@@ -65,11 +65,19 @@ public class YoloPoseProcessor extends VisionProcessorBase<YoloPoseProcessor.Res
   private enum Engine { POSE_AND_OBJECT, POSE_ONLY }
   private volatile Engine engine = Engine.POSE_AND_OBJECT;
 
+  private final boolean drawPose;
+
   public YoloPoseProcessor(Context context, boolean yoloMode, boolean jumperMode) {
+    this(context, yoloMode, jumperMode, true);
+  }
+
+  public YoloPoseProcessor(Context context, boolean yoloMode, boolean jumperMode,
+      boolean drawPose) {
     super(context);
     this.context = context;
     this.yoloMode = yoloMode;
     this.jumperMode = jumperMode;
+    this.drawPose = drawPose;
     engine = yoloMode ? Engine.POSE_AND_OBJECT : Engine.POSE_ONLY;
     objLabels = YoloDetector.loadLabels(context, "model/coco80_zh_en.txt");
   }
@@ -89,11 +97,13 @@ public class YoloPoseProcessor extends VisionProcessorBase<YoloPoseProcessor.Res
     }
 
     try {
-      ErrorLog.i(TAG, "正在加载 yolo11n-pose.onnx(640px) ...");
-      long t0 = System.currentTimeMillis();
-      YoloPoseDetector pd = new YoloPoseDetector(context, "model/yolo11n-pose.onnx");
-      poseDetector = pd;
-      ErrorLog.i(TAG, "yolo11n-pose.onnx 加载成功 " + (System.currentTimeMillis() - t0) + "ms");
+      if (drawPose) {
+        ErrorLog.i(TAG, "正在加载 yolo11n-pose.onnx(640px) ...");
+        long t0 = System.currentTimeMillis();
+        YoloPoseDetector pd = new YoloPoseDetector(context, "model/yolo11n-pose.onnx");
+        poseDetector = pd;
+        ErrorLog.i(TAG, "yolo11n-pose.onnx 加载成功 " + (System.currentTimeMillis() - t0) + "ms");
+      }
 
       if (engine == Engine.POSE_AND_OBJECT) {
         ErrorLog.i(TAG, "正在加载 yolo11n.onnx(物体) ...");
@@ -137,7 +147,8 @@ public class YoloPoseProcessor extends VisionProcessorBase<YoloPoseProcessor.Res
       }
       long t0 = System.currentTimeMillis();
       try {
-        List<YoloPoseDetector.Pose> poses = poseDetector.detect(frame);
+        List<YoloPoseDetector.Pose> poses = drawPose
+            ? poseDetector.detect(frame) : new ArrayList<>();
         List<YoloDetector.Box> objects;
         if (engine == Engine.POSE_AND_OBJECT && objectDetector != null) {
           objects = objectDetector.detect(frame);
@@ -176,7 +187,9 @@ public class YoloPoseProcessor extends VisionProcessorBase<YoloPoseProcessor.Res
     }
 
     // Draw pose skeleton + object boxes.
-    graphicOverlay.add(new YoloPoseGraphic(graphicOverlay, result.poses));
+    if (drawPose) {
+      graphicOverlay.add(new YoloPoseGraphic(graphicOverlay, result.poses));
+    }
     if (yoloMode && result.objects != null && !result.objects.isEmpty()) {
       graphicOverlay.add(new YoloGraphic(graphicOverlay, result.objects, objLabels));
     }

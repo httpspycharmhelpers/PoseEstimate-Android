@@ -194,11 +194,16 @@ public final class LivePreviewActivity extends AppCompatActivity
           final int ENGINE_NATIVE = 1;
           final int ENGINE_YOLO = 2;
           final int ENGINE_NCNN = 4;
-          if (engine == ENGINE_YOLO) {
+          if (engine == 0) {
+            // sg.md: Pose mode 关闭 -> 不加载任何 Pose 模型。YOLO Mode 仍可用。
+            Log.i(TAG, "Pose mode is OFF, yoloMode=" + yoloMode);
+            cameraSource.setMachineLearningFrameProcessor(
+                new YoloPoseProcessor(this, yoloMode, false, false));
+          } else if (engine == ENGINE_YOLO) {
             Log.i(TAG, "Using YOLOv11 pose engine, yoloMode=" + yoloMode
                 + " jumperMode=" + jumperMode);
             cameraSource.setMachineLearningFrameProcessor(
-                new YoloPoseProcessor(this, yoloMode, jumperMode));
+                new YoloPoseProcessor(this, yoloMode, jumperMode, true));
           } else if (engine == ENGINE_NCNN) {
             int ncnnTask = PreferenceUtils.getNcnnTask(this);
             int ncnnSize = PreferenceUtils.getNcnnSize(this);

@@ -31,24 +31,25 @@
   </PreferenceCategory>
 
   <PreferenceCategory android:title="@string/pref_category_pose_detection">
+
+    <!-- sg.md: Pose mode 开关（关闭后没有任何 Pose 模型） -->
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/pref_key_pose_mode_switch"
+        android:persistent="true"
+        android:summary="@string/pref_summary_pose_mode_switch"
+        android:title="@string/pref_title_pose_mode_switch"/>
+
+    <!-- sg.md: Pose mode 引擎选择 -->
     <ListPreference
         android:defaultValue="@string/pref_entry_values_pose_detector_performance_mode_fast"
         android:entries="@array/pref_entries_values_pose_detector_performance_mode"
         android:entryValues="@array/pref_entry_values_pose_detector_performance_mode"
         android:key="@string/pref_key_live_preview_pose_detection_performance_mode"
         android:persistent="true"
-        android:title="@string/pref_title_pose_detector_performance_mode"
+        android:title="@string/pref_title_pose_modes"
         android:summary="%s"/>
 
-    <!-- Our modification: native model (ML Kit) toggle, default ON -->
-    <SwitchPreference
-        android:defaultValue="true"
-        android:key="@string/pref_key_pose_detector_native_model"
-        android:persistent="true"
-        android:summary="@string/pref_summary_pose_detector_native_model"
-        android:title="@string/pref_title_pose_detector_native_model"/>
-
-    <!-- Our modifications: extra modes on top of the ML Kit skeleton -->
     <SwitchPreference
         android:defaultValue="false"
         android:key="@string/pref_key_jump_rope_mode"
@@ -56,6 +57,7 @@
         android:summary="@string/pref_summary_jump_rope_mode"
         android:title="@string/pref_title_jump_rope_mode"/>
 
+    <!-- sg.md: YOLO Mode 开关 -->
     <SwitchPreference
         android:defaultValue="false"
         android:key="@string/pref_key_yolo_mode"
@@ -63,7 +65,17 @@
         android:summary="@string/pref_summary_yolo_mode"
         android:title="@string/pref_title_yolo_mode"/>
 
-    <!-- Our modifications: NCNN model engine settings (sg.md "NNCN Model(YOLOv11)") -->
+    <!-- sg.md: YOLOv11 Mode / ONNX Model 选择 -->
+    <ListPreference
+        android:defaultValue="@string/pref_entry_values_yolo11_onnx_n"
+        android:entries="@array/pref_entries_yolo11_onnx_model"
+        android:entryValues="@array/pref_entry_values_yolo11_onnx_model"
+        android:key="@string/pref_key_yolo11_onnx_model"
+        android:persistent="true"
+        android:summary="@string/pref_summary_yolo11_onnx_model"
+        android:title="@string/pref_title_yolo11_onnx_model"/>
+
+    <!-- sg.md: NNCN Model (YOLOv11) 任务 + 尺寸 -->
     <ListPreference
         android:defaultValue="@string/pref_entry_values_ncnn_task_pose"
         android:entries="@array/pref_entries_ncnn_task"
