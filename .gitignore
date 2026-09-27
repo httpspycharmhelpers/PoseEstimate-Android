@@ -22,3 +22,9 @@ android/local.properties
 *.keystore
 *.jks
 captures/
+
+# Third-party prebuilt native deps for the ncnn engine (downloadable from the
+# nihui/ncnn-android-yolo11 releases; regenerated on this build machine, not
+# tracked in git):
+android/app/src/main/jni/ncnn-20260526-android-vulkan/
+android/app/src/main/jni/opencv-mobile-4.13.0-android/

@@ -107,8 +107,8 @@ public class PreferenceUtils {
 
   /**
    * Our modification: which skeleton engine should we run?
-   * Returns 1 = native ML Kit, 2 = our YOLOv11 pose.
-   * YOLOv11 wins when the performance mode is "3" (YOLOv11 Pose) OR the native
+   * Returns 1 = native ML Kit, 2 = our YOLOv11 pose, 4 = our ncnn pose.
+   * YOLOv11/ncnn wins when the performance mode is "3"/"4" OR the native
    * model is turned off (falls back to our own skeleton engine).
    */
   public static int getLivePreviewPoseEngine(Context context) {
@@ -119,8 +119,12 @@ public class PreferenceUtils {
             POSE_DETECTOR_PERFORMANCE_MODE_FAST);
     final int ENGINE_NATIVE = 1;
     final int ENGINE_YOLO = 2;
+    final int ENGINE_NCNN = 4;
     if (performanceMode == 3) {
       return ENGINE_YOLO;
+    }
+    if (performanceMode == 4) {
+      return ENGINE_NCNN;
     }
     if (isNativePoseModelEnabled(context)) {
       return ENGINE_NATIVE;

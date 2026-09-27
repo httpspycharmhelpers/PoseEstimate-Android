@@ -109,6 +109,10 @@
     <!-- Our modification: 3rd performance option using our OWN skeleton engine -->
     <string name="pref_entries_pose_detector_performance_mode_yolo">YOLOv11 Pose</string>
     <string name="pref_entry_values_pose_detector_performance_mode_yolo" translatable="false">3</string>
+
+    <!-- Our modification: 4th performance option using the ncnn engine -->
+    <string name="pref_entries_pose_detector_performance_mode_ncnn_p">NCNN Pose</string>
+    <string name="pref_entry_values_pose_detector_performance_mode_ncnn_p" translatable="false">4</string>
     <string name="pref_title_pose_detector_native_model">原生模型 (ML Kit)</string>
     <string name="pref_key_pose_detector_native_model" translatable="false">pdnm</string>
     <string name="pref_summary_pose_detector_native_model">关闭后改用我们的 YOLOv11 pose 引擎（即使选择了 Fast/Accurate）</string>

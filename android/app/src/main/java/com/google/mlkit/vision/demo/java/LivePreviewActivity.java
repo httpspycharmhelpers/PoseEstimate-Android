@@ -52,6 +52,7 @@ import com.google.mlkit.vision.demo.R;
 import com.google.mlkit.vision.demo.java.posedetector.PoseDetectorProcessor;
 import com.google.mlkit.vision.demo.java.posedetector.YoloPoseProcessor;
 import com.google.mlkit.vision.demo.java.posedetector.PoseGraphic;
+import com.google.mlkit.vision.demo.java.ncnn.NcnnPoseProcessor;
 import com.google.mlkit.vision.demo.preference.PreferenceUtils;
 import com.google.mlkit.vision.demo.preference.SettingsActivity;
 import com.google.mlkit.vision.demo.preference.SettingsActivity.LaunchSource;
@@ -192,11 +193,18 @@ public final class LivePreviewActivity extends AppCompatActivity
           int engine = PreferenceUtils.getLivePreviewPoseEngine(this);
           final int ENGINE_NATIVE = 1;
           final int ENGINE_YOLO = 2;
+          final int ENGINE_NCNN = 4;
           if (engine == ENGINE_YOLO) {
             Log.i(TAG, "Using YOLOv11 pose engine, yoloMode=" + yoloMode
                 + " jumperMode=" + jumperMode);
             cameraSource.setMachineLearningFrameProcessor(
                 new YoloPoseProcessor(this, yoloMode, jumperMode));
+          } else if (engine == ENGINE_NCNN) {
+            Log.i(TAG, "Using ncnn pose engine, yoloMode=" + yoloMode
+                + " jumperMode=" + jumperMode);
+            cameraSource.setMachineLearningFrameProcessor(
+                new NcnnPoseProcessor(this, jumperMode,
+                    NcnnPoseProcessor.MODEL_N640, NcnnPoseProcessor.CPUGPU_GPU));
           } else {
             PoseDetectorOptionsBase poseDetectorOptions =
                 PreferenceUtils.getPoseDetectorOptionsForLivePreview(this);

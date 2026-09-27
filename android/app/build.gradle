@@ -41,9 +41,9 @@ android {
         jvmTarget = "1.8"
     }
 
-    // Do NOT compress ONNX/TFLite model files (important for direct asset load).
+    // Do NOT compress ONNX/TFLite/NCNN model files (important for direct asset load).
     aaptOptions {
-        noCompress "onnx", "tflite"
+        noCompress "onnx", "tflite", "ncnn"
     }
 }
 
